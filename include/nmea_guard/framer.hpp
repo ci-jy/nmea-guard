@@ -40,6 +40,8 @@ public:
     static constexpr std::size_t kCapacity = 120;
 
     FeedResult feed(std::uint8_t byte) noexcept;
+    // Drop any sentence in progress and hunt for the next '$'. Call this when
+    // the UART driver reports an overrun or framing error.
     void reset() noexcept;
 
     // Sentence text without the leading '$' and without "*hh". Valid only
@@ -52,12 +54,14 @@ public:
 private:
     enum class State : std::uint8_t { kHunt, kBody, kSum1, kSum2, kEnd };
 
+    void clear() noexcept;
     FeedResult reject(FrameError e) noexcept;
     FeedResult finish() noexcept;
     bool push_raw(std::uint8_t byte) noexcept;
 
     State state_ = State::kHunt;
     FrameError error_ = FrameError::kNone;
+    bool pending_start_ = false;  // a '$' ended the last sentence
     std::uint8_t running_ = 0;   // XOR of body characters
     std::uint8_t expected_ = 0;  // value of the transmitted checksum
     std::size_t body_len_ = 0;

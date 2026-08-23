@@ -20,14 +20,17 @@ MODE_LETTERS = "ADEMNSFRPC"
 MIN_FIELDS = {"GGA": 14, "RMC": 12, "GSA": 18, "VTG": 9}
 
 
-def framed_sentences(data: bytes):
-    """Yield every checksum-valid sentence in a raw log, the way a streaming
-    framer sees them: from the last '$' on a line to the line end."""
+def segments(data: bytes):
+    """Split a raw log the way a streaming framer sees it: a candidate
+    sentence starts at each '$' and runs to the next '$' or line end."""
     for line in re.split(rb"[\r\n]", data):
-        start = line.rfind(b"$")
-        if start < 0:
-            continue
-        chunk = line[start:]
+        for piece in line.split(b"$")[1:]:
+            yield b"$" + piece
+
+
+def framed_sentences(data: bytes):
+    """Yield (text, body) for every checksum-valid sentence in a raw log."""
+    for chunk in segments(data):
         if any(b < 0x20 or b > 0x7E for b in chunk):
             continue
         text = chunk.decode("ascii")

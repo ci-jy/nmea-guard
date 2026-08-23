@@ -156,14 +156,36 @@ TEST(Framer, DollarMidSentenceRestarts) {
     EXPECT_EQ(out.errors[0], FrameError::kInterrupted);
 }
 
-TEST(Framer, DroppedLineEndDoesNotMergeSentences) {
+TEST(Framer, DroppedLineEndAfterChecksumKeepsBothSentences) {
+    // Seen in real logs: "...*1E$GPRMC,...". The first sentence's checksum is
+    // complete, so it is judged on its own and the '$' starts the next one.
     std::string a = frame(kGga);
-    a.erase(a.size() - 2);  // CR/LF lost in an overrun
+    a.erase(a.size() - 2);
+    const auto out = run_framer(a + frame("GPTXT,01"));
+    ASSERT_EQ(out.sentences.size(), 2u);
+    EXPECT_EQ(out.sentences[0], kGga);
+    EXPECT_EQ(out.sentences[1], "GPTXT,01");
+    EXPECT_TRUE(out.errors.empty());
+}
+
+TEST(Framer, BadChecksumBeforeDollarStillStartsNextSentence) {
+    std::string a = frame(kGga);
+    a.erase(a.size() - 2);
+    a[a.size() - 1] = a[a.size() - 1] == '0' ? '1' : '0';
+    const auto out = run_framer(a + frame("GPTXT,01"));
+    ASSERT_EQ(out.sentences.size(), 1u);
+    EXPECT_EQ(out.sentences[0], "GPTXT,01");
+    ASSERT_EQ(out.errors.size(), 1u);
+    EXPECT_EQ(out.errors[0], FrameError::kChecksumMismatch);
+}
+
+TEST(Framer, DroppedLineEndBeforeChecksumDoesNotMerge) {
+    std::string a = frame(kGga);
+    a.erase(a.find('*'));  // tail lost from the '*' on
     const auto out = run_framer(a + frame(kGga));
     ASSERT_EQ(out.sentences.size(), 1u);
     EXPECT_EQ(out.sentences[0], kGga);
     ASSERT_EQ(out.errors.size(), 1u);
-    // The first sentence was complete up to "*hh" and then saw '$'.
     EXPECT_EQ(out.errors[0], FrameError::kInterrupted);
 }
 

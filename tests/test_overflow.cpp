@@ -46,11 +46,11 @@ TEST(Overflow, TailAfterOverflowIsNotParsedAsASentence) {
     EXPECT_EQ(out.errors.size(), 1u);
 }
 
-TEST(Overflow, TwoSentencesWithMissingLineEndsDoNotMerge) {
+TEST(Overflow, TwoSentencesWithMissingTailsDoNotMerge) {
     std::string a = frame(kRmc);
-    a.erase(a.size() - 2);
+    a.erase(a.size() - 6);
     std::string b = frame(kRmc);
-    b.erase(b.size() - 2);
+    b.erase(b.size() - 9);
     const auto out = run_framer(a + b + frame(kRmc));
     ASSERT_EQ(out.sentences.size(), 1u);
     EXPECT_EQ(out.errors.size(), 2u);

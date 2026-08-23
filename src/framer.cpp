@@ -30,6 +30,13 @@ const char* to_string(FrameError e) noexcept {
 }
 
 void Framer::reset() noexcept {
+    clear();
+    pending_start_ = false;
+}
+
+void Framer::clear() noexcept {
+    // pending_start_ is left alone: a sentence rejected on a '$' still owes
+    // the next sentence its start marker.
     state_ = State::kHunt;
     running_ = 0;
     expected_ = 0;
@@ -39,7 +46,7 @@ void Framer::reset() noexcept {
 
 FeedResult Framer::reject(FrameError e) noexcept {
     error_ = e;
-    reset();
+    clear();
     return FeedResult::kRejected;
 }
 
@@ -59,11 +66,27 @@ FeedResult Framer::finish() noexcept {
 }
 
 FeedResult Framer::feed(std::uint8_t byte) noexcept {
+    if (pending_start_) {
+        // The previous call finished a sentence on a '$'; that '$' opens this one.
+        pending_start_ = false;
+        clear();
+        state_ = State::kBody;
+        push_raw('$');
+    }
+
+    if (byte == '$' && state_ == State::kEnd) {
+        // "*hh" was complete but the line end was lost. The checksum covers
+        // the whole sentence, so it can still be judged; the '$' starts the
+        // next sentence once the caller has had a chance to read this one.
+        pending_start_ = true;
+        return finish();
+    }
+
     if (byte == '$') {
         // A start marker always begins a fresh sentence. If one was already
         // in progress, it lost its tail (typically a UART overrun).
         const bool interrupted = state_ != State::kHunt;
-        reset();
+        clear();
         state_ = State::kBody;
         push_raw(byte);
         if (interrupted) {
