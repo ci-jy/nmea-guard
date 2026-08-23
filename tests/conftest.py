@@ -32,6 +32,7 @@ def replay():
         return json.loads(run(*args))
 
     run.summary = summary
+    run.path = exe
     return run
 
 
