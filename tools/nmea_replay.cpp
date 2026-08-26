@@ -7,6 +7,7 @@
 // --sentences prints one JSON object per decoded sentence (JSON Lines).
 // --accepted prints the raw text of every accepted sentence, one per line.
 
+#include <charconv>
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -44,8 +45,14 @@ void json_string(std::FILE* out, std::string_view s) {
 }
 
 void json_number(std::FILE* out, const std::optional<double>& v) {
-    if (v) std::fprintf(out, "%.17g", *v);
-    else std::fputs("null", out);
+    if (!v) {
+        std::fputs("null", out);
+        return;
+    }
+    // Shortest text that reads back as the same double.
+    char buf[32];
+    const auto r = std::to_chars(buf, buf + sizeof buf, *v);
+    std::fwrite(buf, 1, static_cast<std::size_t>(r.ptr - buf), out);
 }
 
 void json_number(std::FILE* out, const std::optional<std::uint32_t>& v) {

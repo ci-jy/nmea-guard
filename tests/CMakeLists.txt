@@ -24,3 +24,10 @@ gtest_discover_tests(nmea_guard_tests)
 add_executable(nmea_guard_heap_test test_no_heap.cpp)
 target_link_libraries(nmea_guard_heap_test PRIVATE nmea_guard GTest::gtest_main)
 gtest_discover_tests(nmea_guard_heap_test)
+
+# Link-level proof of the no-heap / no-exceptions / no-RTTI promise.
+if(CMAKE_NM)
+  add_test(NAME library_has_no_heap_or_exception_symbols
+    COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DLIB=$<TARGET_FILE:nmea_guard>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/check_symbols.cmake)
+endif()
