@@ -1,0 +1,218 @@
+{
+  "rate": 0.25,
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "logs": 173,
+  "faults": {
+    "dropped_chars": {
+      "damaged": 8475,
+      "guard_passed": 53,
+      "guard_rejected_pct": 99.37,
+      "guard_intact_lost": 0,
+      "guard_recovered": 110,
+      "naive_passed": 1084,
+      "naive_rejected_pct": 87.21,
+      "naive_intact_lost": 3,
+      "naive_recovered": 78,
+      "per_seed": [
+        {
+          "fault": "dropped_chars",
+          "seed": 1,
+          "logs": 103,
+          "damaged": 2748,
+          "guard_passed": 25,
+          "guard_intact_lost": 0,
+          "guard_recovered": 36,
+          "naive_passed": 369,
+          "naive_intact_lost": 1,
+          "naive_recovered": 25
+        },
+        {
+          "fault": "dropped_chars",
+          "seed": 2,
+          "logs": 102,
+          "damaged": 2889,
+          "guard_passed": 11,
+          "guard_intact_lost": 0,
+          "guard_recovered": 38,
+          "naive_passed": 351,
+          "naive_intact_lost": 1,
+          "naive_recovered": 25
+        },
+        {
+          "fault": "dropped_chars",
+          "seed": 3,
+          "logs": 104,
+          "damaged": 2838,
+          "guard_passed": 17,
+          "guard_intact_lost": 0,
+          "guard_recovered": 36,
+          "naive_passed": 364,
+          "naive_intact_lost": 1,
+          "naive_recovered": 28
+        }
+      ]
+    },
+    "truncated_read": {
+      "damaged": 14141,
+      "guard_passed": 6,
+      "guard_rejected_pct": 99.96,
+      "guard_intact_lost": 1,
+      "guard_recovered": 84,
+      "naive_passed": 832,
+      "naive_rejected_pct": 94.12,
+      "naive_intact_lost": 4,
+      "naive_recovered": 81,
+      "per_seed": [
+        {
+          "fault": "truncated_read",
+          "seed": 1,
+          "logs": 103,
+          "damaged": 4611,
+          "guard_passed": 4,
+          "guard_intact_lost": 0,
+          "guard_recovered": 19,
+          "naive_passed": 287,
+          "naive_intact_lost": 1,
+          "naive_recovered": 19
+        },
+        {
+          "fault": "truncated_read",
+          "seed": 2,
+          "logs": 103,
+          "damaged": 4815,
+          "guard_passed": 2,
+          "guard_intact_lost": 1,
+          "guard_recovered": 36,
+          "naive_passed": 274,
+          "naive_intact_lost": 2,
+          "naive_recovered": 33
+        },
+        {
+          "fault": "truncated_read",
+          "seed": 3,
+          "logs": 102,
+          "damaged": 4715,
+          "guard_passed": 0,
+          "guard_intact_lost": 0,
+          "guard_recovered": 29,
+          "naive_passed": 271,
+          "naive_intact_lost": 1,
+          "naive_recovered": 29
+        }
+      ]
+    },
+    "bit_flip": {
+      "damaged": 8359,
+      "guard_passed": 45,
+      "guard_rejected_pct": 99.46,
+      "guard_intact_lost": 0,
+      "guard_recovered": 38,
+      "naive_passed": 744,
+      "naive_rejected_pct": 91.1,
+      "naive_intact_lost": 3,
+      "naive_recovered": 49,
+      "per_seed": [
+        {
+          "fault": "bit_flip",
+          "seed": 1,
+          "logs": 103,
+          "damaged": 2777,
+          "guard_passed": 17,
+          "guard_intact_lost": 0,
+          "guard_recovered": 23,
+          "naive_passed": 235,
+          "naive_intact_lost": 1,
+          "naive_recovered": 27
+        },
+        {
+          "fault": "bit_flip",
+          "seed": 2,
+          "logs": 103,
+          "damaged": 2738,
+          "guard_passed": 12,
+          "guard_intact_lost": 0,
+          "guard_recovered": 5,
+          "naive_passed": 252,
+          "naive_intact_lost": 1,
+          "naive_recovered": 7
+        },
+        {
+          "fault": "bit_flip",
+          "seed": 3,
+          "logs": 105,
+          "damaged": 2844,
+          "guard_passed": 16,
+          "guard_intact_lost": 0,
+          "guard_recovered": 10,
+          "naive_passed": 257,
+          "naive_intact_lost": 1,
+          "naive_recovered": 15
+        }
+      ]
+    },
+    "missing_line_end": {
+      "damaged": 8327,
+      "guard_passed": 0,
+      "guard_rejected_pct": 100.0,
+      "guard_intact_lost": 0,
+      "guard_recovered": 8281,
+      "naive_passed": 4,
+      "naive_rejected_pct": 99.95,
+      "naive_intact_lost": 3,
+      "naive_recovered": 296,
+      "per_seed": [
+        {
+          "fault": "missing_line_end",
+          "seed": 1,
+          "logs": 105,
+          "damaged": 2812,
+          "guard_passed": 0,
+          "guard_intact_lost": 0,
+          "guard_recovered": 2796,
+          "naive_passed": 1,
+          "naive_intact_lost": 1,
+          "naive_recovered": 91
+        },
+        {
+          "fault": "missing_line_end",
+          "seed": 2,
+          "logs": 105,
+          "damaged": 2789,
+          "guard_passed": 0,
+          "guard_intact_lost": 0,
+          "guard_recovered": 2774,
+          "naive_passed": 1,
+          "naive_intact_lost": 1,
+          "naive_recovered": 103
+        },
+        {
+          "fault": "missing_line_end",
+          "seed": 3,
+          "logs": 103,
+          "damaged": 2726,
+          "guard_passed": 0,
+          "guard_intact_lost": 0,
+          "guard_recovered": 2711,
+          "naive_passed": 2,
+          "naive_intact_lost": 1,
+          "naive_recovered": 102
+        }
+      ]
+    }
+  },
+  "all_faults": {
+    "damaged": 39302,
+    "guard_passed": 104,
+    "guard_rejected_pct": 99.74,
+    "guard_intact_lost": 1,
+    "guard_recovered": 8513,
+    "naive_passed": 2664,
+    "naive_rejected_pct": 93.22,
+    "naive_intact_lost": 13,
+    "naive_recovered": 504
+  }
+}
