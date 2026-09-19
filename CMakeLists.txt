@@ -11,6 +11,18 @@ endif()
 
 option(NMEA_GUARD_BUILD_TOOLS "Build the nmea-replay CLI" ON)
 option(NMEA_GUARD_BUILD_TESTS "Build the GoogleTest suite" ON)
+option(NMEA_GUARD_BUILD_FUZZERS "Build the libFuzzer targets in fuzz/ (Clang only)" OFF)
+
+if(NMEA_GUARD_BUILD_FUZZERS)
+  if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(FATAL_ERROR "NMEA_GUARD_BUILD_FUZZERS needs Clang; see scripts/fuzz.sh")
+  endif()
+  # Everything, the library included, gets ASan, UBSan and fuzzer coverage.
+  # UBSan's vptr check needs RTTI, which the library is built without.
+  add_compile_options(-fsanitize=address,undefined,fuzzer-no-link
+                      -fno-sanitize=vptr -fno-sanitize-recover=all -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address,undefined -fno-sanitize=vptr)
+endif()
 
 # The library itself is written for firmware: no exceptions, no RTTI, and
 # nothing that touches the heap.
@@ -40,4 +52,8 @@ endif()
 if(NMEA_GUARD_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+if(NMEA_GUARD_BUILD_TESTS OR NMEA_GUARD_BUILD_FUZZERS)
+  add_subdirectory(fuzz)
 endif()
