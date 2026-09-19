@@ -142,7 +142,7 @@ DecodeResult decode(std::string_view body, Sentence& out) noexcept {
     out.talker[0] = addr[0];
     out.talker[1] = addr[1];
     out.talker[2] = '\0';
-    for (int i = 0; i < 3; ++i) out.type_code[i] = addr[2 + i];
+    for (std::size_t i = 0; i < 3; ++i) out.type_code[i] = addr[2 + i];
     out.type_code[3] = '\0';
 
     const std::string_view code = addr.substr(2);
