@@ -43,6 +43,9 @@ public:
     // End of input: terminate a final unterminated line and close the epoch
     // in progress. Returns the event for that final line, if any.
     Event flush() noexcept;
+    // Drop the sentence in progress, e.g. when the UART reports an overrun.
+    // The fix being built and the statistics are kept.
+    void reset() noexcept { framer_.reset(); }
 
     const Sentence& sentence() const noexcept { return sentence_; }
     std::string_view raw() const noexcept { return framer_.raw(); }

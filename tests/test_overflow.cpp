@@ -80,3 +80,26 @@ TEST(Overflow, ExplicitResetDropsPartialSentence) {
 }
 
 }  // namespace
+
+namespace {
+
+TEST(Overflow, ParserResetDropsPartialSentence) {
+    // The UART reports an overrun halfway through a sentence; the driver
+    // calls reset() and the bytes that follow are the tail of another one.
+    Parser p;
+    const std::string a = frame(kRmc);
+    for (std::size_t i = 0; i < a.size() / 2; ++i) EXPECT_EQ(p.feed(static_cast<std::uint8_t>(a[i])), Event::kNone);
+    p.reset();
+    const std::string b = frame("GPGGA,081412.000,5541.1956,N,03737.2873,E,1,08,0.9,180.0,M,14.0,M,,");
+    int sentences = 0;
+    for (char c : a.substr(a.size() / 2) + b) {
+        if (p.feed(static_cast<std::uint8_t>(c)) == Event::kSentence) {
+            ++sentences;
+            EXPECT_EQ(p.raw(), b.substr(0, b.size() - 2));
+        }
+    }
+    EXPECT_EQ(sentences, 1);
+    EXPECT_EQ(p.stats().rejected, 0u);
+}
+
+}  // namespace
