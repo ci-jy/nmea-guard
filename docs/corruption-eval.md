@@ -20,6 +20,20 @@ The injector only damages clean GGA, RMC, GSA and VTG sentences (the ones `tests
 
 `truncated_read` damages two lines at once when the resume point is past the start of the next line. Both count as damaged.
 
+## An example
+
+```console
+$ python3 tools/corrupt.py --fault bit_flip --seed 4 --rate 0.5 data/gpsd/bu353-glonass.log -o flipped.log
+{"log": "data/gpsd/bu353-glonass.log", "fault": "bit_flip", "seed": 4, "rate": 0.5, "damaged": 35}
+$ diff data/gpsd/bu353-glonass.log flipped.log | tr -d '\r' | sed -n '2p;4p;6p;8p'
+< $GNGSA,A,3,03,19,27,13,,,,,,,,,2.75,2.56,1.00*10
+< $GNRMC,081411.000,A,5541.1955,N,03737.2872,E,0.60,301.29,260514,,,A*74
+> $GNGSA,A,3,03,19,27,13,,,,,,,,,2.75,2.56,1.00*30
+> $GNRMC,081411.000,A,5541.1955,N,03737/2872,E,0.60,301.29,260514,,,A*74
+```
+
+The first sentence lost a bit in its checksum, the second one in its longitude (a `.` turned into `/`) and in the CR, which became a tab.
+
 ## What is counted
 
 For each parser, `nmea-replay --parser guard|naive --accepted` lists the sentences it accepted, and they are compared with the text of the original log:
