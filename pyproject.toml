@@ -1,6 +1,6 @@
 [project]
 name = "nmea-guard-tests"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python test harness for the nmea-guard C++ parser"
 requires-python = ">=3.10"
 dependencies = [
