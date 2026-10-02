@@ -1,0 +1,41 @@
+{
+  "target": "Cortex-M3, QEMU mps2-an385",
+  "compiler": "arm-none-eabi-g++ 14.2.1 -Os, newlib-nano, --gc-sections",
+  "probe": {
+    "flash_bytes": 8237,
+    "ram_bytes": 1152,
+    "stack_reserved_bytes": 16384,
+    "image_flash_bytes": 8244
+  },
+  "flash_by_part": {
+    "nmea_guard": 4872,
+    "soft_float": 2220,
+    "libc": 620,
+    "startup_and_app": 525
+  },
+  "ram_by_part": {
+    "nmea_guard": 0,
+    "soft_float": 0,
+    "libc": 0,
+    "startup_and_app": 1152
+  },
+  "library_flash_by_file": {
+    "fields": 1392,
+    "fix": 418,
+    "framer": 342,
+    "parser": 262,
+    "sentences": 2458
+  },
+  "heap_or_exception_symbols": [],
+  "qemu": {
+    "vectors": 797,
+    "failed": 0,
+    "values_compared": 1262,
+    "values_bit_exact": 1262,
+    "scenarios_passed": 4,
+    "scenarios": 4,
+    "sizeof_parser": 1136,
+    "feed_stack_bytes": 1016,
+    "passed": true
+  }
+}
