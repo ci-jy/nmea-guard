@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 *.pyc
 build-fuzz/
+firmware/build/
