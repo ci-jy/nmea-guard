@@ -102,6 +102,18 @@ def compiler_version(cxx: str) -> str:
         return "unknown"
 
 
+# Anything here in the linked image would mean the no-heap, no-exceptions
+# promise broke somewhere between the library and the toolchain.
+FORBIDDEN = re.compile(r"^(malloc|free|calloc|realloc|_sbrk|_sbrk_r|_malloc_r|abort|__cxa_throw|_Znwj|_Znaj|_ZdlPv)$")
+
+
+def forbidden_symbols(elf: Path, cxx: str) -> list[str]:
+    nm = cxx.removesuffix("g++") + "nm"
+    out = subprocess.run([nm, str(elf)], capture_output=True, text=True, check=True).stdout
+    return sorted({parts[-1] for parts in (l.split() for l in out.splitlines())
+                   if parts and FORBIDDEN.match(parts[-1])})
+
+
 def report(build: Path, cxx: str) -> dict:
     sizes, output_sizes = parse_map((build / "probe.map").read_text())
     flash = {k: 0 for k in ("nmea_guard", "soft_float", "libc", "startup_and_app")}
@@ -129,6 +141,7 @@ def report(build: Path, cxx: str) -> dict:
         "flash_by_part": flash,
         "ram_by_part": ram,
         "library_flash_by_file": dict(sorted(per_object.items())),
+        "heap_or_exception_symbols": forbidden_symbols(build / "probe.elf", cxx),
         "qemu": read_result(build / "qemu.log"),
     }
     return out
@@ -141,6 +154,8 @@ def print_table(r: dict) -> None:
           f"(+ {p['stack_reserved_bytes']} B stack reserved)")
     for part in r["flash_by_part"]:
         print(f"    {part:<16} {r['flash_by_part'][part]:>6} B flash {r['ram_by_part'][part]:>6} B RAM")
+    bad = r["heap_or_exception_symbols"]
+    print(f"  heap/exception symbols linked: {', '.join(bad) if bad else 'none'}")
     q = r["qemu"]
     if q:
         print(f"  QEMU run: {q['vectors'] - q['failed']}/{q['vectors']} vectors, "
@@ -161,7 +176,7 @@ def main() -> int:
     print_table(r)
     if args.output:
         args.output.write_text(json.dumps(r, indent=2) + "\n")
-    return 0
+    return 1 if r["heap_or_exception_symbols"] else 0
 
 
 if __name__ == "__main__":
