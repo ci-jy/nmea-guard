@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  host:
+    name: Host build, GoogleTest and pytest
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libgtest-dev
+          python3 -m pip install -r requirements.txt
+      - name: Cache gpsd logs
+        uses: actions/cache@v4
+        with:
+          path: data/gpsd
+          key: gpsd-logs-${{ hashFiles('scripts/fetch_logs.sh') }}
+      - run: bash scripts/fetch_logs.sh
+      - run: cmake -S . -B build
+      - run: cmake --build build --parallel
+      - run: ctest --test-dir build --output-on-failure
+      - run: python3 -m pytest -q
+
+  fuzz:
+    name: Fuzz smoke run (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake clang libclang-rt-dev
+      - name: Cache gpsd logs
+        uses: actions/cache@v4
+        with:
+          path: data/gpsd
+          key: gpsd-logs-${{ hashFiles('scripts/fetch_logs.sh') }}
+      - run: bash scripts/fetch_logs.sh
+      - run: bash scripts/fuzz.sh 60
+      - name: Keep crashing inputs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-artifacts
+          path: |
+            build-fuzz/artifacts/
+            build-fuzz/fuzz_*.log
+
+  firmware:
+    name: Cortex-M3 build on QEMU
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make gcc-arm-none-eabi libnewlib-arm-none-eabi \
+            libstdc++-arm-none-eabi-newlib qemu-system-arm
+          python3 -m pip install -r requirements.txt
+      - run: make -C firmware qemu-test
+      - run: python3 -m pytest -q tests/test_report.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: firmware-size
+          path: |
+            firmware/build/firmware-size.json
+            firmware/build/qemu.log
+            firmware/build/probe.map
