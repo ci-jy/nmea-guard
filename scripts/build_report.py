@@ -45,7 +45,8 @@ h1 { font-size: 1.6rem; margin-bottom: .2rem; }
 h2 { font-size: 1.2rem; margin-top: 2.2rem; border-bottom: 1px solid #d0d7de; padding-bottom: .3rem; }
 p.lead { color: #57606a; margin-top: 0; }
 table { border-collapse: collapse; width: 100%; margin: .8rem 0; font-variant-numeric: tabular-nums; }
-th, td { padding: .35rem .6rem; border-bottom: 1px solid #d0d7de; text-align: right; white-space: nowrap; }
+th, td { padding: .35rem .6rem; border-bottom: 1px solid #d0d7de; text-align: right; }
+td { white-space: nowrap; }
 td.note { white-space: normal; }
 th:first-child, td:first-child { text-align: left; }
 th { background: #f6f8fa; font-weight: 600; }
@@ -67,7 +68,7 @@ def pct(passed: int, damaged: int) -> str:
 
 
 def bar(cls: str, passed: int, worst: int) -> str:
-    width = 0 if worst == 0 else max(1, round(120 * passed / worst)) if passed else 0
+    width = 0 if worst == 0 else max(1, round(80 * passed / worst)) if passed else 0
     return f'<span class="bar {cls}" style="width:{width}px"></span>'
 
 

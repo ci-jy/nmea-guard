@@ -11,7 +11,8 @@ h1 { font-size: 1.6rem; margin-bottom: .2rem; }
 h2 { font-size: 1.2rem; margin-top: 2.2rem; border-bottom: 1px solid #d0d7de; padding-bottom: .3rem; }
 p.lead { color: #57606a; margin-top: 0; }
 table { border-collapse: collapse; width: 100%; margin: .8rem 0; font-variant-numeric: tabular-nums; }
-th, td { padding: .35rem .6rem; border-bottom: 1px solid #d0d7de; text-align: right; white-space: nowrap; }
+th, td { padding: .35rem .6rem; border-bottom: 1px solid #d0d7de; text-align: right; }
+td { white-space: nowrap; }
 td.note { white-space: normal; }
 th:first-child, td:first-child { text-align: left; }
 th { background: #f6f8fa; font-weight: 600; }
@@ -37,7 +38,7 @@ if the parser accepted it as a position, time or speed.</p>
 <table>
 <tr><th>Fault</th><th>Damaged</th><th>nmea-guard accepted</th><th>naive accepted</th>
 <th>nmea-guard rejected</th><th>naive rejected</th></tr>
-<tr><td>Dropped bytes</td><td>8,475</td><td>53 <span class="bar guard" style="width:6px"></span></td><td>1,084 <span class="bar naive" style="width:120px"></span></td><td>99.37%</td><td>87.21%</td></tr><tr><td class="note" colspan="6">1 to 3 bytes lost from the line, as when the UART FIFO fills</td></tr><tr><td>Overrun</td><td>14,141</td><td>6 <span class="bar guard" style="width:1px"></span></td><td>832 <span class="bar naive" style="width:92px"></span></td><td>99.96%</td><td>94.12%</td></tr><tr><td class="note" colspan="6">the line is cut and the stream resumes inside the next one</td></tr><tr><td>Bit flips</td><td>8,359</td><td>45 <span class="bar guard" style="width:5px"></span></td><td>744 <span class="bar naive" style="width:82px"></span></td><td>99.46%</td><td>91.10%</td></tr><tr><td class="note" colspan="6">1 or 2 bits flipped anywhere, line ending included</td></tr><tr><td>Lost line end</td><td>8,327</td><td>0 <span class="bar guard" style="width:0px"></span></td><td>4 <span class="bar naive" style="width:1px"></span></td><td>100.00%</td><td>99.95%</td></tr><tr><td class="note" colspan="6">CR/LF removed, so two sentences run together</td></tr><tr><th>All faults</th><th>39,302</th><th>104</th><th>2,664</th><th>99.74%</th><th>93.22%</th></tr>
+<tr><td>Dropped bytes</td><td>8,475</td><td>53 <span class="bar guard" style="width:4px"></span></td><td>1,084 <span class="bar naive" style="width:80px"></span></td><td>99.37%</td><td>87.21%</td></tr><tr><td class="note" colspan="6">1 to 3 bytes lost from the line, as when the UART FIFO fills</td></tr><tr><td>Overrun</td><td>14,141</td><td>6 <span class="bar guard" style="width:1px"></span></td><td>832 <span class="bar naive" style="width:61px"></span></td><td>99.96%</td><td>94.12%</td></tr><tr><td class="note" colspan="6">the line is cut and the stream resumes inside the next one</td></tr><tr><td>Bit flips</td><td>8,359</td><td>45 <span class="bar guard" style="width:3px"></span></td><td>744 <span class="bar naive" style="width:55px"></span></td><td>99.46%</td><td>91.10%</td></tr><tr><td class="note" colspan="6">1 or 2 bits flipped anywhere, line ending included</td></tr><tr><td>Lost line end</td><td>8,327</td><td>0 <span class="bar guard" style="width:0px"></span></td><td>4 <span class="bar naive" style="width:1px"></span></td><td>100.00%</td><td>99.95%</td></tr><tr><td class="note" colspan="6">CR/LF removed, so two sentences run together</td></tr><tr><th>All faults</th><th>39,302</th><th>104</th><th>2,664</th><th>99.74%</th><th>93.22%</th></tr>
 </table>
 <p>When only the line end is lost, nmea-guard still decodes the first of the two run-together sentences on its
 checksum: 8,281 of 8,327 came back, against
