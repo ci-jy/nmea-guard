@@ -1,6 +1,6 @@
 # Tests
 
-Run with `ctest --test-dir build --output-on-failure` and `python3 -m pytest -q` (after `scripts/fetch_logs.sh`).
+Run with `ctest --test-dir build --output-on-failure` and `python3 -m pytest -q` (after `scripts/fetch_logs.sh`). The Cortex-M3 run is `make -C firmware qemu-test`.
 
 ## GoogleTest (`tests/*.cpp`)
 
@@ -29,3 +29,11 @@ Unit tests for `tools/corrupt.py`: the same seed gives the same damage, rate 0 c
 ## Fuzz corpus
 
 ctest also runs `fuzz_parser_corpus` and `fuzz_decode_corpus`, the fuzz targets built without libFuzzer and run over `fuzz/corpus/`. The fuzzing itself is in [fuzzing.md](fuzzing.md).
+
+## Firmware vectors (`firmware/`, `tests/test_vectors.py`)
+
+ctest builds `firmware/runner.cpp` for the host and runs it as `firmware_vectors_host`. `make -C firmware qemu-test` runs the same runner on a Cortex-M3 under QEMU. Both feed 797 lines from the gpsd logs, some of them damaged, and check the event and decoded values for each, plus four overflow, reset and fix scenarios. `tests/test_vectors.py` checks that `firmware/vectors.inc` is what `scripts/gen_vectors.py` makes from the current logs, and that it covers every outcome. See [firmware.md](firmware.md).
+
+## Report page (`tests/test_report.py`)
+
+`docs/index.html` has to be exactly what `scripts/build_report.py` makes from `results/`. It has to be well formed, without scripts or external resources, and its links have to resolve. Every number in its tables has to match `results/rejection.json` and `results/firmware-size.json`, and those files have to add up: per-seed counts to totals, flash parts to the image size. After a `make -C firmware qemu-test`, the fresh run also has to agree with the committed one on what was checked. Sizes may differ with the compiler version.
