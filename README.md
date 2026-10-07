@@ -2,11 +2,11 @@
 
 nmea-guard is a small C++17 library that parses GPS NMEA 0183 sentences one byte at a time, without using the heap. A lot of simple parsers only check the checksum when `*hh` sits exactly at the end of the line, so when a serial read loop falls behind and drops bytes, damaged sentences get through as wrong positions. I wanted a parser that doesn't do that, and a way to measure how often it happens on real receiver logs.
 
-Alongside the library there's `nmea-replay`, a command-line tool that runs recorded logs through the parser and prints JSON, plus a seeded fault injector, two libFuzzer targets and a bare-metal runner for a Cortex-M3 on QEMU. MIT licensed.
+It comes with `nmea-replay`, a command-line tool that runs recorded logs through the parser and prints JSON, plus a fault injector, two libFuzzer targets and a bare-metal test runner for a Cortex-M3 on QEMU. MIT licensed.
 
 ## Running it
 
-You need CMake 3.16 or newer and a C++17 compiler. CMake uses the system GoogleTest if you have it and downloads it if you don't. The Python tests need pynmea2 and pytest, fuzzing needs Clang, and the firmware build needs the Arm GNU toolchain and QEMU.
+You need CMake 3.16 or newer and a C++17 compiler. CMake uses the system GoogleTest if there is one and downloads it otherwise. The Python tests need pynmea2 and pytest, fuzzing needs Clang, and the firmware build needs the Arm GNU toolchain and QEMU.
 
 ```sh
 sudo apt-get install cmake g++ libgtest-dev python3-pip clang libclang-rt-dev \
@@ -54,17 +54,17 @@ $ python3 scripts/overrun_eval.py --seed 1
 }
 ```
 
-Overruns aren't the only thing that goes wrong on a serial line, so `tools/corrupt.py` also flips bits, cuts reads short and removes line endings. Across all four faults nmea-guard rejects 99.74% of damaged sentences and the naive parser 93.22%. The method and other seeds are in [docs/overrun-eval.md](docs/overrun-eval.md) and [docs/corruption-eval.md](docs/corruption-eval.md), and `docs/index.html` puts everything on one page, generated from `results/`.
+Overruns aren't the only thing that goes wrong on a serial line, so `tools/corrupt.py` also flips bits, cuts reads short and removes line endings. Across all four faults nmea-guard rejects 99.74% of damaged sentences and the naive parser 93.22%. The method and other seeds are in [docs/overrun-eval.md](docs/overrun-eval.md) and [docs/corruption-eval.md](docs/corruption-eval.md), and `docs/index.html` puts the results on one page.
 
 ## How it works
 
-Framing is a five-state machine: hunt for `$`, body, two checksum digits, line end. The checksum is the XOR of everything between `$` and the first `*`, wherever that `*` turns up, and after it there must be exactly two hex digits and then CR or LF. Anything else is a rejection, never "no checksum, so accept it". After a rejection the framer goes back to hunting for `$`, so the tail of a broken sentence can't become the start of the next one.
+Framing is a small state machine: hunt for `$`, body, two checksum digits, line end. The checksum is the XOR of everything between `$` and the first `*`, wherever that `*` turns up, and after it there must be exactly two hex digits and then CR or LF. Anything else is a rejection, never "no checksum, so accept it". After a rejection the framer goes back to hunting for `$`, so the tail of a broken sentence can't become the start of the next one.
 
 One thing surprised me. Some gpsd logs contain `...*1E$GPRMC,...`, where a line ending got lost right after a complete checksum. Throwing away both sentences felt wrong, so the first is judged on its checksum and the `$` starts the next.
 
-Fields are validated, not just split. A dropped byte that the checksum misses usually shortens or shifts a field, so minutes have to be below 60, dates have to be real days, and so on. That catches most of them. Decimals are parsed without `strtod`, which gives the same double as Python's `float()` and lets the differential test against pynmea2 use a very tight tolerance. More detail in [docs/design.md](docs/design.md).
+Fields are validated, not just split. A dropped byte that the checksum misses usually shortens or shifts a field, so minutes have to be below 60, dates have to be real days, and so on. That catches most of them. Decimals are parsed without `strtod`, which gives the same double as Python's `float()`, so the differential test against pynmea2 can use a very tight tolerance. More in [docs/design.md](docs/design.md).
 
-The same sources build unchanged for QEMU's `mps2-an385` board, a Cortex-M3 with no FPU. A runner streams 797 test vectors through one `Parser`, with expected results taken from a Python reference and pynmea2 rather than the C++ code, and every decoded value matched exactly even with software floating point. A minimal UART-to-fix firmware is about 8 KB of flash and 1.1 KB of RAM. The first link was the real surprise: `std::string_view::substr` pulled in `abort()` and newlib's `_sbrk` through a libstdc++ range-check helper, so a library with no heap was quietly linking one. `firmware/cxx_support.cpp` swaps that helper for a trap, and the size report now fails if any allocator or exception symbol shows up ([docs/firmware.md](docs/firmware.md)).
+The same sources build unchanged for QEMU's `mps2-an385` board, a Cortex-M3 with no FPU. A runner streams 797 test vectors through one `Parser`, with expected results from a Python reference and pynmea2 rather than the C++ code, and every decoded value matched exactly. The first link was the real surprise: `std::string_view::substr` pulled in `abort()` and newlib's `_sbrk` through a libstdc++ range-check helper, so a library with no heap was quietly linking one. `firmware/cxx_support.cpp` swaps that helper for a trap, and the size report now fails if an allocator or exception symbol shows up. Sizes are in [docs/firmware.md](docs/firmware.md).
 
 ## Known issues
 
